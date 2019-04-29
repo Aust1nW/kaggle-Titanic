@@ -73,7 +73,8 @@ class PeopleSet:
         data -= data.mean(axis=0)
         data /= data.std(axis=0)
         return data
-        
+
+#Reads
 f = open(str(sys.argv[1]),"r")
 train_data = PeopleSet(f.readlines())
 train_data.tensor = PeopleSet.normalize_samples(train_data.tensor)
@@ -81,6 +82,7 @@ train_data.tensor = PeopleSet.normalize_samples(train_data.tensor)
 from keras import models
 from keras import layers
 
+#Model implementation
 def build_model():
     model = models.Sequential()
     model.add(layers.Dense(64,activation='relu',input_shape=(train_data.tensor.shape[1],)))
@@ -89,9 +91,9 @@ def build_model():
     model.compile(optimizer='rmsprop', loss='binary_crossentropy', metrics=['acc'])
     return model
 
+#K-fold validation to handle small training set
 k = 4
 num_val_samples = len(train_data.id)//k
-
 num_epochs = 3 
 all_scores = []
 for i in range(k):
@@ -113,12 +115,10 @@ for i in range(k):
     val_bce, val_acc = model.evaluate(val_data, val_targets, verbose=0)
     all_scores.append(val_acc)
     
-
+#Clear memory, build new PeopleSet class
 from keras import backend as K
-
 K.clear_session()
-
-test_in = open("test.csv")
+test_in = open(str(sys.stdin))
 test_data = PeopleSet(test_in.readlines())
 model = build_model()
 
